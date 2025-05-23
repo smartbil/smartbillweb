@@ -44,12 +44,13 @@ export default function SignIn() {
       }
 
       login({
-        id: data.id,
+        uid: data.uid,
         email: data.user.email,
+        username: data.user.username,
         token: data.token
       });
 
-      router.push("/pos");
+      router.push("/client/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { db } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { FirebaseError } from "firebase/app"; 
+import { auth, db } from "@/firebase";
 
 export async function POST(req: NextRequest) {
     try {
@@ -15,57 +15,61 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const usersCollection = collection(db, "users");
-        const q = query(usersCollection, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-        if (querySnapshot.empty) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
             return NextResponse.json(
-                { success: false, message: "Invalid email or password." },
+                { success: false, message: "User data not found." },
                 { status: 400 }
             );
         }
 
-        const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
+        const token = await user.getIdToken();
 
-        const isPasswordValid = await bcrypt.compare(password, userData.password);
-
-        if (!isPasswordValid) {
-            return NextResponse.json(
-                { success: false, message: "Invalid email or password." },
-                { status: 400 }
-            );
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password: _, ...userWithoutPassword } = userData;
-
-        const jwtSecret = process.env.JWT_SECRET
-        if (!jwtSecret) {
-            throw new Error("JWT secret is not defined.");
-        }
-
-        const token = jwt.sign(
-            { email: userWithoutPassword.email, id: userDoc.id },
-            jwtSecret,
-            { expiresIn: "2h" }
-        );
-
-        return NextResponse.json(
-            {
-                success: true,
-                message: "User logged in successfully.",
-                id: userDoc.id,
-                user: userWithoutPassword,
-                token,
+        return NextResponse.json({
+            success: true,
+            message: "User logged in successfully.",
+            uid: user.uid,
+            user: {
+                email: userData.email,
+                username: userData.username,
+                uid: user.uid
             },
-            { status: 200 }
-        );
+            token,
+        }, { status: 200 });
+
     } catch (error) {
-        console.error("Error during login:", error);
+        console.error("Login error:", error);
+
+        if (error instanceof FirebaseError) {
+            switch (error.code) {
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    return NextResponse.json(
+                        { success: false, message: "Invalid email or password" },
+                        { status: 401 }
+                    );
+                case 'auth/too-many-requests':
+                    return NextResponse.json(
+                        { success: false, message: "Too many attempts. Try again later" },
+                        { status: 429 }
+                    );
+                default:
+                    return NextResponse.json(
+                        { success: false, message: "Authentication error" },
+                        { status: 400 }
+                    );
+            }
+        }
+
         return NextResponse.json(
-            { success: false, message: "Failed to log in the user." },
+            { success: false, message: "Internal server error" },
             { status: 500 }
         );
     }

@@ -13,14 +13,14 @@ export default function AllCategories() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      if (!user?.id) {
+      if (!user?.uid) {
         setError("User not authenticated");
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch(`/api/category/all-categories?shopId=${user.id}`);
+        const response = await fetch(`/api/category/all-categories?shopId=${user.uid}`);
         const result = await response.json();
 
         if (result.success) {
@@ -37,11 +37,11 @@ export default function AllCategories() {
     };
 
     fetchCategories();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/category/delete-category?id=${id}&shopId=${user?.id}`, {
+      const response = await fetch(`/api/category/delete-category?id=${id}&shopId=${user?.uid}`, {
         method: 'DELETE',
       });
 

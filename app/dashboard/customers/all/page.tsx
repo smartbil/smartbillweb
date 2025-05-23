@@ -12,14 +12,14 @@ export default function AllCustomers() {
 
   useEffect(() => {
     const fetchCustomers = async () => {
-      if (!user?.id) {
+      if (!user?.uid) {
         setError("User not authenticated");
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch(`/api/customer/all-customers?shopId=${user.id}`);
+        const response = await fetch(`/api/customer/all-customers?shopId=${user.uid}`);
         const result = await response.json();
 
         if (result.success) {
@@ -36,11 +36,11 @@ export default function AllCustomers() {
     };
 
     fetchCustomers();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/customer/delete-customer?id=${id}&shopId=${user?.id}`, {
+      const response = await fetch(`/api/customer/delete-customer?id=${id}&shopId=${user?.uid}`, {
         method: 'DELETE',
       });
 

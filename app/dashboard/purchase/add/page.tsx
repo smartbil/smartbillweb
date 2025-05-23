@@ -26,7 +26,7 @@ const PlaceOrder = () => {
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
-        const response = await fetch(`/api/supplier/all-suppliers?shopId=${user?.id}`);
+        const response = await fetch(`/api/supplier/all-suppliers?shopId=${user?.uid}`);
         const data = await response.json();
         if (data.success) {
           console.log(data.suppliers)
@@ -39,7 +39,7 @@ const PlaceOrder = () => {
 
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`/api/product/all-products?shopId=${user?.id}`);
+        const response = await fetch(`/api/product/all-products?shopId=${user?.uid}`);
         const data = await response.json();
         if (data.success) {
           setProducts(data.products);
@@ -105,7 +105,7 @@ const PlaceOrder = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/purchase/add-purchase?shopId=${user?.id}`, {
+      const response = await fetch(`/api/purchase/add-purchase?shopId=${user?.uid}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

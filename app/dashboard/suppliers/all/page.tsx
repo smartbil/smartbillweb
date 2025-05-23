@@ -15,13 +15,13 @@ export default function AllSuppliers() {
     useEffect(() => {
         const fetchSuppliers = async () => {
             try {
-                if (!user?.id) {
+                if (!user?.uid) {
                     setError("User not authenticated");
                     setLoading(false);
                     return;
                 }
 
-                const response = await fetch(`/api/supplier/all-suppliers?shopId=${user.id}`);
+                const response = await fetch(`/api/supplier/all-suppliers?shopId=${user.uid}`);
                 const result = await response.json();
 
                 if (result.success) {
@@ -41,7 +41,7 @@ export default function AllSuppliers() {
         };
 
         fetchSuppliers();
-    }, [user?.id]);
+    }, [user?.uid]);
 
     const handleEdit = (id: string) => {
         router.push(`/dashboard/suppliers/add?id=${id}`);
@@ -49,13 +49,13 @@ export default function AllSuppliers() {
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this supplier?")) return;
-        if (!user?.id) {
+        if (!user?.uid) {
             alert("User not authenticated");
             return;
         }
 
         try {
-            const response = await fetch(`/api/supplier/delete-suppliers?id=${id}&shopId=${user.id}`, {
+            const response = await fetch(`/api/supplier/delete-suppliers?id=${id}&shopId=${user.uid}`, {
                 method: 'DELETE',
             });
 

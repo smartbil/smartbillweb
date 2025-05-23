@@ -22,8 +22,8 @@ const Header = () => {
               Sign in
             </Link>
           ) : (
-            <Link href="../../dashboard/products/all" className="hover:text-gray-300">
-              Dashboard
+            <Link href="profile" className="hover:text-gray-300">
+              Profile
             </Link>
           )}
         </nav>

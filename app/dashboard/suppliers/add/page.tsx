@@ -28,9 +28,9 @@ export default function AddSupplier() {
 
     useEffect(() => {
         const fetchSupplier = async () => {
-            if (isEditMode && user?.id) {
+            if (isEditMode && user?.uid) {
                 try {
-                    const response = await fetch(`/api/supplier/get-supplier?id=${supplierId}&shopId=${user.id}`);
+                    const response = await fetch(`/api/supplier/get-supplier?id=${supplierId}&shopId=${user.uid}`);
                     if (!response.ok) {
                         throw new Error('Failed to fetch supplier');
                     }
@@ -55,7 +55,7 @@ export default function AddSupplier() {
         };
 
         fetchSupplier();
-    }, [supplierId, isEditMode, user?.id]);
+    }, [supplierId, isEditMode, user?.uid]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -81,7 +81,7 @@ export default function AddSupplier() {
                 email: supplier.email,
                 credit: supplier.credit,
                 status: supplier.status,
-                shopId: user?.id,
+                shopId: user?.uid,
                 supplierId: supplierId
             };
 

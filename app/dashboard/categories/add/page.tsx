@@ -26,9 +26,9 @@ export default function AddCategory() {
 
   useEffect(() => {
     const fetchCategoryDetails = async () => {
-      if (isEditMode && user?.id) {
+      if (isEditMode && user?.uid) {
         try {
-          const response = await fetch(`/api/category/get-category?id=${categoryId}&shopId=${user.id}`);
+          const response = await fetch(`/api/category/get-category?id=${categoryId}&shopId=${user.uid}`);
           const result = await response.json();
 
           if (result.success) {
@@ -50,7 +50,7 @@ export default function AddCategory() {
     };
 
     fetchCategoryDetails();
-  }, [categoryId, user?.id, isEditMode]);
+  }, [categoryId, user?.uid, isEditMode]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setCategory({ ...category, [e.target.name]: e.target.value });
@@ -60,7 +60,7 @@ export default function AddCategory() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id) {
+    if (!user?.uid) {
       setError("You must be logged in to manage categories");
       return;
     }
@@ -84,7 +84,7 @@ export default function AddCategory() {
         body: JSON.stringify({
           name: category.name.trim(),
           description: category.description.trim(),
-          shopId: user.id,
+          shopId: user.uid,
           categoryId: isEditMode ? categoryId : undefined
         }),
         headers: {

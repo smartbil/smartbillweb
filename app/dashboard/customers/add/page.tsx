@@ -30,9 +30,9 @@ export default function AddCustomer() {
 
   useEffect(() => {
     const fetchCustomerDetails = async () => {
-      if (isEditMode && user?.id) {
+      if (isEditMode && user?.uid) {
         try {
-          const response = await fetch(`/api/customer/get-customer?id=${customerId}&shopId=${user.id}`);
+          const response = await fetch(`/api/customer/get-customer?id=${customerId}&shopId=${user.uid}`);
           const result = await response.json();
 
           if (result.success) {
@@ -58,7 +58,7 @@ export default function AddCustomer() {
     };
 
     fetchCustomerDetails();
-  }, [customerId, user?.id, isEditMode]);
+  }, [customerId, user?.uid, isEditMode]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCustomer(prev => ({ 
@@ -72,7 +72,7 @@ export default function AddCustomer() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id) {
+    if (!user?.uid) {
       setError("You must be logged in to manage customers");
       return;
     }
@@ -119,7 +119,7 @@ export default function AddCustomer() {
           balancecredit: customer.balancecredit,
           status: customer.status,
           updatedAt: customer.updatedAt,
-          shopId: user.id,
+          shopId: user.uid,
           id: isEditMode ? customerId : undefined
         }),
         headers: {

@@ -57,12 +57,12 @@ const Sales = () => {
     useEffect(() => {
         const fetchSales = async () => {
             try {
-                if (!user?.id) {
+                if (!user?.uid) {
                     setError('Shop ID not found');
                     return;
                 }
 
-                const response = await fetch(`/api/sale/all-sales?shopId=${user.id}`);
+                const response = await fetch(`/api/sale/all-sales?shopId=${user.uid}`);
                 if (!response.ok) throw new Error('Failed to fetch sales');
 
                 const data = await response.json();
@@ -78,7 +78,7 @@ const Sales = () => {
         };
 
         fetchSales();
-    }, [user?.id]);
+    }, [user?.uid]);
 
     const processChartData = (salesData: Sale[]) => {
         const productMap = new Map<string, ProductSale>();

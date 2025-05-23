@@ -218,7 +218,7 @@ const POSSystem = () => {
   };
 
   const updateProductStock = async (productId: string, newStock: number) => {
-    if (!user?.id) return false;
+    if (!user?.uid) return false;
 
     try {
       const response = await fetch(`/api/product/update-stock`, {
@@ -229,7 +229,7 @@ const POSSystem = () => {
         body: JSON.stringify({
           id: productId,
           stock: newStock,
-          shopId: user.id
+          shopId: user.uid
         }),
       });
 
@@ -254,8 +254,8 @@ const POSSystem = () => {
     }
 
     const orderDetails = {
-      userId: user?.id,
-      shopId: user?.id,
+      userId: user?.uid,
+      shopId: user?.uid,
       customerId: selectedCustomer?.id || null,
       products: selectedProducts,
       subtotal,
@@ -331,7 +331,7 @@ const POSSystem = () => {
     setCustomerSearchResults([]);
 
     try {
-      const response = await fetch(`/api/customer/search-customer?shopId=${user?.id}&searchType=${searchType}&searchValue=${searchValue}`);
+      const response = await fetch(`/api/customer/search-customer?shopId=${user?.uid}&searchType=${searchType}&searchValue=${searchValue}`);
       const result = await response.json();
 
       if (result.success) {
@@ -359,34 +359,15 @@ const POSSystem = () => {
     setIsPaymentModalVisible(true);
   };
 
-  const fetchCustomerCreditDetails = async (customerId: string) => {
-    if (!customerId) return;
-  
-    try {
-      const response = await fetch(`/api/customer/get-credits?customerId=${customerId}&shopId=${user?.id}`);
-      const result = await response.json();
-  
-      if (result.success) {
-        setSelectedCustomer(prev => ({
-          ...prev!,
-          totalcredit: result.creditDetails.totalCredit,
-          balancecredit: result.creditDetails.balanceCredit
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching customer credit details:", error);
-    }
-  };
-
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!user?.id) {
+      if (!user?.uid) {
         setError("User not authenticated.")
         setLoading(false)
         return false;
       }
       try {
-        const response = await fetch(`/api/product/all-products?shopId=${user?.id}`);
+        const response = await fetch(`/api/product/all-products?shopId=${user?.uid}`);
         const result = await response.json()
 
         if (result.success) {
@@ -404,13 +385,13 @@ const POSSystem = () => {
     }
 
     const fetchCategories = async () => {
-      if (!user?.id) {
+      if (!user?.uid) {
         setError("User not authenticated.")
         setLoading(false)
         return false;
       }
       try {
-        const response = await fetch(`/api/category/all-categories?shopId=${user?.id}`);
+        const response = await fetch(`/api/category/all-categories?shopId=${user?.uid}`);
         const result = await response.json()
 
         if (result.success) {
@@ -429,13 +410,31 @@ const POSSystem = () => {
 
     fetchProducts()
     fetchCategories()
-  }, [user?.id]);
+  }, [user?.uid]);
 
   useEffect(() => {
+    const fetchCustomerCreditDetails = async (customerId: string) => {
+    if (!customerId) return;
+  
+    try {
+      const response = await fetch(`/api/customer/get-credits?customerId=${customerId}&shopId=${user?.uid}`);
+      const result = await response.json();
+  
+      if (result.success) {
+        setSelectedCustomer(prev => ({
+          ...prev!,
+          totalcredit: result.creditDetails.totalCredit,
+          balancecredit: result.creditDetails.balanceCredit
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching customer credit details:", error);
+    }
+  };
     if (selectedCustomer?.id) {
       fetchCustomerCreditDetails(selectedCustomer.id);
     }
-  }, [selectedCustomer?.id, fetchCustomerCreditDetails]);  
+  }, [selectedCustomer?.id, user?.uid]);  
 
   const paidAmount = paymentMethods.reduce((sum, method) => sum + method.amount, 0);
   const remainingAmount = finalAmount - paidAmount;

@@ -30,10 +30,10 @@ export default function AddProduct() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      if (!user?.id) return;
+      if (!user?.uid) return;
 
       try {
-        const response = await fetch(`/api/category/all-categories?shopId=${user.id}`);
+        const response = await fetch(`/api/category/all-categories?shopId=${user.uid}`);
         const result = await response.json();
         
         if (result.success) {
@@ -48,13 +48,13 @@ export default function AddProduct() {
     };
 
     fetchCategories();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
-      if (isEditMode && user?.id) {
+      if (isEditMode && user?.uid) {
         try {
-          const response = await fetch(`/api/product/get-product?id=${productId}&shopId=${user.id}`);
+          const response = await fetch(`/api/product/get-product?id=${productId}&shopId=${user.uid}`);
           const result = await response.json();
 
           if (result.success) {
@@ -80,7 +80,7 @@ export default function AddProduct() {
     };
 
     fetchProductDetails();
-  }, [productId, user?.id, isEditMode]);
+  }, [productId, user?.uid, isEditMode]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setProduct(prev => ({
@@ -102,7 +102,7 @@ export default function AddProduct() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id) {
+    if (!user?.uid) {
       setError("You must be logged in to manage products");
       return;
     }
@@ -136,7 +136,7 @@ export default function AddProduct() {
           stock: Number(product.stock),
           sellingprice: Number(product.sellingprice),
           purchaseprice: Number(product.purchaseprice),
-          shopId: user.id,
+          shopId: user.uid,
           id: isEditMode ? productId : undefined
         }),
         headers: {

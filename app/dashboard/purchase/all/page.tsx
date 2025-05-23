@@ -11,7 +11,7 @@ const OrdersList = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch(`/api/purchase/all-purchases?shopId=${user?.id}`);
+        const response = await fetch(`/api/purchase/all-purchases?shopId=${user?.uid}`);
         const data = await response.json();
         console.log(data);
         if (data.success) setOrders(data.orders);
@@ -24,7 +24,7 @@ const OrdersList = () => {
 
   const handleStatusUpdate = async (orderId: string, status: string) => {
     try {
-      const response = await fetch(`/api/purchase/edit-purchase?shopId=${user?.id}`, {
+      const response = await fetch(`/api/purchase/edit-purchase?shopId=${user?.uid}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, status })

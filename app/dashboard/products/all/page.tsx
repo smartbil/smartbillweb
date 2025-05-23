@@ -32,14 +32,14 @@ export default function AllProducts() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!user?.id) {
+      if (!user?.uid) {
         setError("User not authenticated");
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch(`/api/product/all-products?shopId=${user.id}`);
+        const response = await fetch(`/api/product/all-products?shopId=${user.uid}`);
         const result = await response.json();
 
         if (result.success) {
@@ -57,7 +57,7 @@ export default function AllProducts() {
     };
 
     fetchProducts();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   // Effect to generate barcode when the modal is shown
   useEffect(() => {
@@ -105,7 +105,7 @@ export default function AllProducts() {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/product/delete-product?id=${id}&shopId=${user?.id}`, {
+      const response = await fetch(`/api/product/delete-product?id=${id}&shopId=${user?.uid}`, {
         method: 'DELETE',
       });
 
