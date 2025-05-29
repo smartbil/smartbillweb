@@ -121,9 +121,13 @@ export default function ProfileScreen() {
   };
 
   return (
-    <div className="bg-background py-8">
+    <div className="bg-background py-8 px-2">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-black mb-8">Profile Settings</h1>
+        <div className="container mx-auto text-center mb-12 sm:mb-16">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-black">
+          Profile Settings
+        </h1>
+      </div>
         <form className="space-y-6">
           <div className="bg-soft/30 p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-primary mb-4">Personal Information</h2>

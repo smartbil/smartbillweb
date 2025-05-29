@@ -1,8 +1,10 @@
 interface Package {
-    title: string;
-    description: string;
-    price: string;
-    features: string[];
-    bgColor: string;
-    textColor: string;
-  }
+  title: string;
+  price: string;
+  description: string;
+  features: string[];
+  borderColor: string;
+  highlightText: string;
+  bestFor: string;
+  buttonColor: string;
+}

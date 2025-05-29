@@ -18,7 +18,7 @@ const Header = () => {
             Privacy Policy
           </Link>
           {!user ? (
-            <Link href="../../sign-in" className="hover:text-gray-300">
+            <Link href="sign-in" className="hover:text-gray-300">
               Sign in
             </Link>
           ) : (
