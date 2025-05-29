@@ -69,6 +69,7 @@ const packages: Package[] = [
     highlightText: '✅ Best for: Large chains, enterprises',
     bestFor: 'text-smartbill-yellow',
     buttonColor: 'bg-smartbill-yellow',
+    
   },
 ];
 
