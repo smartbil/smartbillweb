@@ -38,6 +38,7 @@ export default function ProfileScreen() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -52,6 +53,33 @@ export default function ProfileScreen() {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!user?.uid) return;
+      const res = await fetch(`/api/auth/me`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.user.subscription) {
+        setSubscription(data.user.subscription);
+      }
+    };
+    fetchSubscription();
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!subscription) {
+      setSubscription({
+        status: 'active',
+        nextBillingDate: '2025-07-01',
+        recurrence: 'Monthly',
+        plan: 'Starter',
+        amount: '999',
+        currency: 'LKR'
+      });
+    }
+  }, [subscription]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -109,7 +137,6 @@ export default function ProfileScreen() {
     }
   };
 
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -117,6 +144,37 @@ export default function ProfileScreen() {
       router.push('/client/home');
     } catch (error) {
       console.error('Error signing out:', error);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!user?.uid || !confirm('Are you sure you want to cancel your subscription?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/subscription/manage', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          status: 'canceled'
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Subscription cancelled successfully');
+        setSubscription((prev: any) => ({ ...prev, status: 'canceled' }));
+      } else {
+        alert('Failed to cancel subscription');
+      }
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      alert('An error occurred while cancelling your subscription');
     }
   };
 
@@ -168,6 +226,40 @@ export default function ProfileScreen() {
               <InputField label="Phone Number" name="phoneNumber" value={userData.phoneNumber} isEditing={isEditing} onChange={handleInputChange} />
             </div>
           </div>
+
+          {subscription && (
+            <div className="bg-soft/30 p-6 rounded-xl mt-6">
+              <h2 className="text-xl font-semibold text-primary mb-4">Subscription Details</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Status</label>
+                  <p className={`text-black ${subscription.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
+                    {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Next Billing</label>
+                  <p className="text-black">{subscription.nextBillingDate}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Plan</label>
+                  <p className="text-black">{subscription.plan}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Amount</label>
+                  <p className="text-black">{subscription.amount} {subscription.currency}</p>
+                </div>
+              </div>
+              {subscription.status === 'active' && (
+                  <button
+                    onClick={handleCancelSubscription}
+                    className="mt-4 px-6 py-2 rounded-lg bg-danger text-white hover:bg-danger/90"
+                  >
+                    Cancel Subscription
+                  </button>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-between gap-4 mt-8">
             <button

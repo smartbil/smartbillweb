@@ -56,6 +56,16 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message &&
+      error.message.includes('does not correspond to a known public key')
+    ) {
+      return NextResponse.json(
+        { success: false, message: "Session expired. Please sign in again." },
+        { status: 401 }
+      );
+    }
     console.error("Error getting user data:", error);
     return NextResponse.json(
       { success: false, message: "Failed to get user data." },
