@@ -21,6 +21,27 @@ interface SelectFieldProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
+interface UserData {
+  uid: string;
+  token: string;
+  username: string;
+  email: string;
+  shopName: string;
+  address: string;
+  phoneNumber: string;
+  businessType: string;
+  avatar: string;
+}
+
+interface Subscription {
+  status: 'active' | 'canceled' | string;
+  nextBillingDate: string;
+  recurrence: string;
+  plan: string;
+  amount: string;
+  currency: string;
+}
+
 export default function ProfileScreen() {
   const router = useRouter();
 
@@ -38,18 +59,18 @@ export default function ProfileScreen() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [subscription, setSubscription] = useState<any>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   useEffect(() => {
     if (user) {
       setUserData({
-        username: user?.username || '',
-        email: user?.email || '',
-        shopName: user?.shopName || '',
-        address: user?.address || '',
-        phoneNumber: user?.phoneNumber || '',
-        businessType: user?.businessType || '',
-        avatar: user?.avatar || ''
+        username: user.username || '',
+        email: user.email || '',
+        shopName: user.shopName || '',
+        address: user.address || '',
+        phoneNumber: user.phoneNumber || '',
+        businessType: user.businessType || '',
+        avatar: user.avatar || ''
       });
     }
   }, [user]);
@@ -66,7 +87,7 @@ export default function ProfileScreen() {
       }
     };
     fetchSubscription();
-  }, [user?.uid]);
+  }, [user?.uid, user?.token]);
 
   useEffect(() => {
     if (!subscription) {
@@ -119,15 +140,12 @@ export default function ProfileScreen() {
         return;
       }
 
-      console.log("Profile updated successfully:", result.data);
-
-      // ✅ Update the local Zustand auth store
       const currentUser = useAuthStore.getState().user;
       if (currentUser) {
         useAuthStore.getState().login({
           ...currentUser,
-          ...result.data, // Merge updated profile data
-          token: idToken, // Preserve the token
+          ...result.data,
+          token: idToken,
         });
       }
 
@@ -165,10 +183,10 @@ export default function ProfileScreen() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         alert('Subscription cancelled successfully');
-        setSubscription((prev: any) => ({ ...prev, status: 'canceled' }));
+        setSubscription((prev) => prev ? { ...prev, status: 'canceled' } : null);
       } else {
         alert('Failed to cancel subscription');
       }
@@ -182,10 +200,10 @@ export default function ProfileScreen() {
     <div className="bg-background py-8 px-2">
       <div className="max-w-4xl mx-auto">
         <div className="container mx-auto text-center mb-12 sm:mb-16">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-black">
-          Profile Settings
-        </h1>
-      </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-black">
+            Profile Settings
+          </h1>
+        </div>
         <form className="space-y-6">
           <div className="bg-soft/30 p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-primary mb-4">Personal Information</h2>
@@ -251,12 +269,12 @@ export default function ProfileScreen() {
                 </div>
               </div>
               {subscription.status === 'active' && (
-                  <button
-                    onClick={handleCancelSubscription}
-                    className="mt-4 px-6 py-2 rounded-lg bg-danger text-white hover:bg-danger/90"
-                  >
-                    Cancel Subscription
-                  </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  className="mt-4 px-6 py-2 rounded-lg bg-danger text-white hover:bg-danger/90"
+                >
+                  Cancel Subscription
+                </button>
               )}
             </div>
           )}
