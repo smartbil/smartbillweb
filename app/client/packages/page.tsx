@@ -10,7 +10,7 @@ const PAYHERE_SANDBOX_URL = process.env.NEXT_PUBLIC_PAYHERE_CHECKOUT_URL;
 const packages: Package[] = [
   {
     title: 'Starter Plan',
-    price: 'LKR 990/month',
+    price: 'LKR 100/month',
     description: 'Ideal for small businesses and startups',
     features: [
       '1 User Account',
