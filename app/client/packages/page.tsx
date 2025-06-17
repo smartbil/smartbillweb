@@ -164,9 +164,6 @@ const PackagesDisplay: React.FC = () => {
       items: selectedPackage.title,
       currency,
       amount,
-      recurrence: '1 Month',
-      duration: 'Forever',
-      startup_fee: '0',
       hash: hashData.hash,
       custom_1: user?.uid ?? null,
     });

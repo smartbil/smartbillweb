@@ -14,9 +14,6 @@ interface PayhereParams {
   items: string;
   currency: string;
   amount: string;
-  recurrence: string;
-  duration: string;
   hash:  string;
-  startup_fee: string;
   custom_1: string | null;
 }

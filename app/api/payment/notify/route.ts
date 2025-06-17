@@ -44,46 +44,33 @@ export async function POST(req: NextRequest) {
     .digest('hex')
     .toUpperCase();
 
-  if (localMd5sig === md5sig) {
+  if (localMd5sig === md5sig && status_code === '2') {
     // Only update if you have a userId (passed as custom_1)
     if (custom_1) {
       const userRef = doc(db, 'users', custom_1);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
-        await updateDoc(userRef, {
-          subscription: {
-            subscriptionId: subscription_id,
-            orderId: order_id,
-            amount: payhere_amount,
-            currency: payhere_currency,
-            status: status_code === '2' && item_rec_status === '0' ? 'active'
-                   : item_rec_status === '-1' ? 'canceled'
-                   : 'inactive',
-            messageType: message_type,
-            recurrence: item_recurrence,
-            duration: item_duration,
-            recStatus: item_rec_status,
-            nextBillingDate: item_rec_date_next,
-            paidInstallments: item_rec_install_paid,
-            lastUpdated: new Date(),
-          }
+        const paidAt = new Date();
+        const expiresAt = new Date(paidAt);
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+        // Add payment record
+        const userPaymentsRef = collection(userRef, 'payments');
+        const paymentDoc = await addDoc(userPaymentsRef, {
+          amount: Number(payhere_amount),
+          paidAt,
+          expiresAt,
+          status: 'success',
+          payhereRef: order_id,
         });
 
-        // Track payment in user's payments subcollection
-        const userPaymentsRef = collection(userRef, 'payments');
-        await addDoc(userPaymentsRef, {
-          subscriptionId: subscription_id,
-          orderId: order_id,
-          amount: payhere_amount,
-          currency: payhere_currency,
-          statusCode: status_code,
-          messageType: message_type,
-          recurrence: item_recurrence,
-          duration: item_duration,
-          recStatus: item_rec_status,
-          nextBillingDate: item_rec_date_next,
-          paidInstallments: item_rec_install_paid,
-          timestamp: new Date(),
+        // Update subscription info
+        await updateDoc(userRef, {
+          subscription: {
+            status: 'active',
+            expiresAt,
+            lastPaymentId: paymentDoc.id,
+          }
         });
       }
     }

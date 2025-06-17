@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import { getAuth } from "firebase-admin/auth";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
@@ -45,13 +45,18 @@ export async function GET(req: NextRequest) {
     }
 
     const userData = userDoc.data();
-
+    let subscription = userData.subscription || {};
+    if (subscription.expiresAt && new Date(subscription.expiresAt.toDate ? subscription.expiresAt.toDate() : subscription.expiresAt) < new Date()) {
+      subscription.status = 'expired';
+      await updateDoc(userDocRef, { 'subscription.status': 'expired' });
+    }
     return NextResponse.json(
       {
         success: true,
-        email: userData.email,
-        username: userData.username,
-        uid: uid,
+        user: {
+          ...userData,
+          subscription,
+        }
       },
       { status: 200 }
     );
