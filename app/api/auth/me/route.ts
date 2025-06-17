@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     }
 
     const userData = userDoc.data();
-    let subscription = userData.subscription || {};
+    const subscription = userData.subscription || {};
     if (subscription.expiresAt && new Date(subscription.expiresAt.toDate ? subscription.expiresAt.toDate() : subscription.expiresAt) < new Date()) {
       subscription.status = 'expired';
       await updateDoc(userDocRef, { 'subscription.status': 'expired' });
