@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   function getPackageByAmount(amount: string | number): string | null {
     const amountNum = Number(amount);
     switch (amountNum) {
-      case 100:
+      case 990:
         return 'Starter Plan';
       case 1990:
         return 'Standard Plan';

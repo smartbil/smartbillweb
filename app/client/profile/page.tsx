@@ -4,7 +4,6 @@ import { useAuthStore } from '@/app/store/authStore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/firebase';
-import Swal from 'sweetalert2';
 
 interface InputFieldProps {
   label: string;
@@ -60,6 +59,7 @@ export default function ProfileScreen() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState<Payment[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   useEffect(() => {
@@ -77,28 +77,32 @@ export default function ProfileScreen() {
   }, [user]);
 
   useEffect(() => {
-    const fetchSubscription = async () => {
+    const fetchPaymentHistory = async () => {
       if (!user?.uid) return;
-      const res = await fetch(`/api/auth/me`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      const data = await res.json();
-      if (data.success && data.user.subscription) {
-        setSubscription(data.user.subscription);
+      try {
+        const res = await fetch(`/api/payment/history?userId=${user.uid}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.payments)) {
+          setPaymentHistory(data.payments);
+        }
+      } catch (err) {
+        console.error('Failed to fetch payment history:', err);
+        setPaymentHistory([]);
       }
     };
-    fetchSubscription();
-  }, [user?.uid, user?.token]);
+    fetchPaymentHistory();
+  }, [user?.uid]);
 
+  // Fetch subscription info (optional, if you want to show plan)
   useEffect(() => {
     if (!subscription) {
       setSubscription({
         status: 'active',
-        nextBillingDate: '2025-07-01',
-        recurrence: 'Monthly',
-        plan: 'Starter',
-        amount: '999',
-        currency: 'LKR'
+        nextBillingDate: '',
+        recurrence: '',
+        plan: '',
+        amount: '',
+        currency: ''
       });
     }
   }, [subscription]);
@@ -166,50 +170,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleCancelSubscription = async () => {
-    if (!user?.uid) {
-      return;
-    }
-
-    const confirmResult = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Are you sure you want to cancel your subscription?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, cancel it!',
-      cancelButtonText: 'No, keep it'
-    });
-
-    if (!confirmResult.isConfirmed) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/subscription/manage', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.uid,
-          status: 'canceled'
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await Swal.fire('Cancelled!', 'Subscription cancelled successfully', 'success');
-        setSubscription((prev) => prev ? { ...prev, status: 'canceled' } : null);
-      } else {
-        await Swal.fire('Failed', 'Failed to cancel subscription', 'error');
-      }
-    } catch (error) {
-      console.error('Error cancelling subscription:', error);
-      await Swal.fire('Error', 'An error occurred while cancelling your subscription', 'error');
-    }
-  };
-
   return (
     <div className="bg-background py-8 px-2">
       <div className="max-w-4xl mx-auto">
@@ -259,39 +219,47 @@ export default function ProfileScreen() {
             </div>
           </div>
 
-          {subscription && (
-            <div className="bg-soft/30 p-6 rounded-xl mt-6">
-              <h2 className="text-xl font-semibold text-primary mb-4">Subscription Details</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Status</label>
-                  <p className={`text-black ${subscription.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
-                    {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Next Billing</label>
-                  <p className="text-black">{subscription.nextBillingDate}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Plan</label>
-                  <p className="text-black">{subscription.plan}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2 text-black">Amount</label>
-                  <p className="text-black">{subscription.amount} {subscription.currency}</p>
-                </div>
+          <div className="bg-soft/30 p-6 rounded-xl mt-6">
+            <h2 className="text-xl font-semibold text-primary mb-4 ">Payment History</h2>
+            {paymentHistory.length === 0 ? (
+              <p className="text-gray-600">No payment records found.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white rounded-lg">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-2 sm:px-4 border-b text-left text-black">Paid Date</th>
+                      <th className="py-2 px-2 sm:px-4 border-b text-left text-black">Amount</th>
+                      <th className="py-2 px-2 sm:px-4 border-b text-left text-black">Plan Name</th>
+                      <th className="py-2 px-2 sm:px-4 border-b text-left text-black">Expire Date</th>
+                      <th className="py-2 px-2 sm:px-4 border-b text-left text-black">Payment ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paymentHistory.map((payment, idx) => (
+                      <tr key={idx} className="text-black">
+                        <td className="py-2 px-2 sm:px-4 border-b">
+                          {payment.paidAt ? new Date(payment.paidAt).toLocaleDateString() : '-'}
+                        </td>
+                        <td className="py-2 px-2 sm:px-4 border-b">
+                          {payment.amount ? `${payment.amount} LKR` : '-'}
+                        </td>
+                        <td className="py-2 px-2 sm:px-4 border-b">
+                          {payment.packageName || '-'}
+                        </td>
+                        <td className="py-2 px-2 sm:px-4 border-b">
+                          {payment.expiresAt ? new Date(payment.expiresAt).toLocaleDateString() : '-'}
+                        </td>
+                        <td className="py-2 px-2 sm:px-4 border-b break-all">
+                          {payment.payment_id || '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              {subscription.status === 'active' && (
-                <button
-                  onClick={handleCancelSubscription}
-                  className="mt-4 px-6 py-2 rounded-lg bg-danger text-white hover:bg-danger/90"
-                >
-                  Cancel Subscription
-                </button>
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="flex justify-between gap-4 mt-8">
             <button

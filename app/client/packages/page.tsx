@@ -10,14 +10,12 @@ const PAYHERE_SANDBOX_URL = process.env.NEXT_PUBLIC_PAYHERE_CHECKOUT_URL;
 const packages: Package[] = [
   {
     title: 'Starter Plan',
-    price: 'LKR 100/month',
+    price: 'LKR 990/month',
     description: 'Ideal for small businesses and startups',
     features: [
-      '1 User Account',
       'Mobile POS Access',
       'Sales & Invoice Management',
-      'Basic Inventory Tracking',
-      'Daily Backup',
+      'Inventory Tracking',
       'Email Support',
     ],
     borderColor: 'border-smartbill-green',
@@ -31,11 +29,10 @@ const packages: Package[] = [
     description: 'Perfect for retail shops and service providers',
     features: [
       'Everything in Starter, plus:',
-      '3 User Accounts',
-      'Web POS Access',
+      'Supplier Management',
       'Customer Management',
       'Sales & Expense Reports',
-      'Discount & Return Handling',
+      'Discount Handling',
       'Priority Support',
     ],
     borderColor: 'border-smartbill-blue',
@@ -54,6 +51,7 @@ const packages: Package[] = [
       'Purchase Order Management',
       'Barcode Scanner Integration',
       'Product Variant Support',
+      'Daily Backup',
     ],
     borderColor: 'border-smartbill-purple',
     highlightText: '✅ Best for: Boutiques, franchises, services',
@@ -277,32 +275,45 @@ const PackagesDisplay: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            {packages.map((pkg, index) => (
-              <div
-                key={index}
-                className={`bg-accent bg-opacity-10 backdrop-blur-sm rounded-xl shadow-lg p-6 flex flex-col hover:scale-105 border-t-4`}
-              >
-                <h2 className={`text-2xl font-semibold mb-2 ${pkg.bestFor}`}>{pkg.title}</h2>
-                <p className="text-2xl font-bold mb-4 text-primary">{pkg.price}</p>
-                <p className="text-smartbill-light-blue mb-6">{pkg.description}</p>
-                <ul className="text-black text-base space-y-3 flex-grow">
-                  {pkg.features.map((feature, i) => (
-                    <li key={i} className="flex items-center">
-                      <span className={`${pkg.bestFor} mr-2`}>✔</span> {feature}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-6 pt-6 border-t border-smartbill-light-blue border-opacity-30">
-                  <p className="text-primary text-lg mb-4">{pkg.highlightText}</p>
-                  <button
-                    onClick={() => handleGetStarted(pkg)}
-                    className="w-full py-3 px-6 rounded-lg text-white font-semibold bg-secondary hover:bg-opacity-90 shadow-md"
-                  >
-                    {pkg.title === 'Enterprise Plan' ? 'Contact Sales' : 'Get Started'}
-                  </button>
+            {packages.map((pkg, index) => {
+              // Mark last two packages as "Coming Soon"
+              const isComingSoon = index >= packages.length - 2;
+              return (
+                <div
+                  key={index}
+                  className={`bg-accent bg-opacity-10 backdrop-blur-sm rounded-xl shadow-lg p-6 flex flex-col hover:scale-105 border-t-4`}
+                >
+                  <h2 className={`text-2xl font-semibold mb-2 ${pkg.bestFor}`}>{pkg.title}</h2>
+                  <p className="text-2xl font-bold mb-4 text-primary">{pkg.price}</p>
+                  <p className="text-smartbill-light-blue mb-6">{pkg.description}</p>
+                  <ul className="text-black text-base space-y-3 flex-grow">
+                    {pkg.features.map((feature, i) => (
+                      <li key={i} className="flex items-center">
+                        <span className={`${pkg.bestFor} mr-2`}>✔</span> {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-6 pt-6 border-t border-smartbill-light-blue border-opacity-30">
+                    <p className="text-primary text-lg mb-4">{pkg.highlightText}</p>
+                    {isComingSoon ? (
+                      <button
+                        disabled
+                        className="w-full py-3 px-6 rounded-lg text-white font-semibold bg-secondary cursor-not-allowed opacity-70 shadow-md"
+                      >
+                        Coming Soon
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleGetStarted(pkg)}
+                        className="w-full py-3 px-6 rounded-lg text-white font-semibold bg-secondary hover:bg-opacity-90 shadow-md"
+                      >
+                        {pkg.title === 'Enterprise Plan' ? 'Contact Sales' : 'Get Started'}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
