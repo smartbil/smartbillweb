@@ -6,53 +6,6 @@ import React, { useEffect, useState } from 'react';
 const PAYHERE_MERCHANT_ID = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID || '1230646';
 const PAYHERE_SANDBOX_URL = process.env.NEXT_PUBLIC_PAYHERE_CHECKOUT_URL;
 
-type Package = {
-  title: string;
-  price: string;
-  description: string;
-  features: string[];
-  borderColor: string;
-  highlightText: string;
-  bestFor: string;
-  buttonColor: string;
-};
-
-type CustomerInfo = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-};
-
-type UserData = {
-  uid: string;
-};
-
-type PayHereFormData = {
-  merchant_id: string;
-  return_url: string;
-  cancel_url: string;
-  notify_url: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
-  order_id: string;
-  items: string;
-  currency: string;
-  amount: string;
-  recurrence: string;
-  duration: string;
-  startup_fee: string;
-  hash: string;
-  custom_1?: string;
-};
-
 const packages: Package[] = [
   {
     title: 'Starter Plan',
@@ -136,7 +89,7 @@ const PackagesDisplay: React.FC = () => {
     address: '',
     city: '',
   });
-  const [payhereFormData, setPayhereFormData] = useState<PayHereFormData | null>(null);
+  const [payhereFormData, setPayhereFormData] = useState<PayhereParams | null>(null);
 
   const user = useAuthStore((state) => state.user) as UserData | null;
 
@@ -215,7 +168,7 @@ const PackagesDisplay: React.FC = () => {
       duration: 'Forever',
       startup_fee: '0',
       hash: hashData.hash,
-      custom_1: user?.uid,
+      custom_1: user?.uid ?? null,
     });
   };
 

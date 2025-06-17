@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { db } from '@/firebase';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, collection, addDoc } from 'firebase/firestore';
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const item_rec_status = formData.get('item_rec_status') as string;
   const item_rec_date_next = formData.get('item_rec_date_next') as string;
   const item_rec_install_paid = formData.get('item_rec_install_paid') as string;
-  const custom_1 = formData.get('custom_1') as string; // You can use this to pass userId
+  const custom_1 = formData.get('custom_1') as string;
 
   console.log('PayHere Notify Params:', {
     merchant_id,
@@ -67,6 +67,23 @@ export async function POST(req: NextRequest) {
             paidInstallments: item_rec_install_paid,
             lastUpdated: new Date(),
           }
+        });
+
+        // Track payment in user's payments subcollection
+        const userPaymentsRef = collection(userRef, 'payments');
+        await addDoc(userPaymentsRef, {
+          subscriptionId: subscription_id,
+          orderId: order_id,
+          amount: payhere_amount,
+          currency: payhere_currency,
+          statusCode: status_code,
+          messageType: message_type,
+          recurrence: item_recurrence,
+          duration: item_duration,
+          recStatus: item_rec_status,
+          nextBillingDate: item_rec_date_next,
+          paidInstallments: item_rec_install_paid,
+          timestamp: new Date(),
         });
       }
     }
