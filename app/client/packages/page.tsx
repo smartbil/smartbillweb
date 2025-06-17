@@ -2,6 +2,7 @@
 
 import { useAuthStore } from '@/app/store/authStore';
 import React, { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 const PAYHERE_MERCHANT_ID = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID || '1230646';
 const PAYHERE_SANDBOX_URL = process.env.NEXT_PUBLIC_PAYHERE_CHECKOUT_URL;
@@ -110,8 +111,20 @@ const PackagesDisplay: React.FC = () => {
   }, []);
 
   const handleGetStarted = (pkg: Package) => {
+    if (!user) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sign In Required',
+        text: 'You must be signed in to subscribe to a package.',
+      });
+      return;
+    }
     if (pkg.title === 'Enterprise Plan') {
-      alert('Please contact our sales team for Enterprise Plan pricing and setup.');
+      Swal.fire({
+        icon: 'info',
+        title: 'Contact Sales',
+        text: 'Please contact our sales team for Enterprise Plan pricing and setup.',
+      });
       return;
     }
     setSelectedPackage(pkg);
@@ -119,8 +132,21 @@ const PackagesDisplay: React.FC = () => {
   };
 
   const handlePayment = async () => {
+    if (!user) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Sign In Required',
+        text: 'You must be signed in to subscribe to a package.',
+      });
+      setShowPaymentForm(false);
+      return;
+    }
     if (!customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone) {
-      alert('Please fill in all required fields.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Fields',
+        text: 'Please fill in all required fields.',
+      });
       return;
     }
 
@@ -144,7 +170,11 @@ const PackagesDisplay: React.FC = () => {
     const hashData = await hashRes.json();
 
     if (!hashData.success) {
-      alert('Failed to generate payment hash');
+      Swal.fire({
+        icon: 'error',
+        title: 'Payment Error',
+        text: 'Failed to generate payment hash',
+      });
       return;
     }
 

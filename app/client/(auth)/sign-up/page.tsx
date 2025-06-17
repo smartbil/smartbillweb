@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/app/components/button";
 import Link from "next/link";
 import LoginInput from "@/app/components/logininput";
+import Swal from "sweetalert2";
 
 export default function SignUp() {
   const [name, setName] = useState("");
@@ -20,6 +21,11 @@ export default function SignUp() {
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      Swal.fire({
+        icon: "error",
+        title: "Password Mismatch",
+        text: "Passwords do not match",
+      });
       return;
     }
 
@@ -40,12 +46,28 @@ export default function SignUp() {
       const data = await response.json();
 
       if (!response.ok) {
+        Swal.fire({
+          icon: "error",
+          title: "Registration Failed",
+          text: data.message || "Registration failed",
+        });
         throw new Error(data.message || "Registration failed");
       }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Account Created",
+        text: "Your account has been created successfully!",
+      });
 
       router.push("/client/home"); 
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
+      Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        text: err instanceof Error ? err.message : "Registration failed",
+      });
     } finally {
       setLoading(false);
     }

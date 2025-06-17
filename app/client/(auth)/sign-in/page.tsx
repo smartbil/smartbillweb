@@ -5,6 +5,7 @@ import { useAuthStore } from "@/app/store/authStore";
 import Button from "@/app/components/button"; 
 import Link from "next/link";
 import LoginInput from "@/app/components/logininput";
+import Swal from "sweetalert2";
 
 export default function SignIn() {
   const router = useRouter();
@@ -21,6 +22,11 @@ export default function SignIn() {
 
     if (!email || !password) {
       setError("Email and password cannot be empty.");
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Fields",
+        text: "Email and password cannot be empty.",
+      });
       return;
     }
 
@@ -40,6 +46,11 @@ export default function SignIn() {
       const data = await response.json();
 
       if (!response.ok) {
+        Swal.fire({
+          icon: "error",
+          title: "Login Failed",
+          text: data.message || "Login failed",
+        });
         throw new Error(data.message || "Login failed");
       }
 
@@ -50,9 +61,20 @@ export default function SignIn() {
         token: data.token
       });
 
+      await Swal.fire({
+        icon: "success",
+        title: "Login Successful",
+        text: "Welcome back!",
+      });
+
       router.push("/client/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: err instanceof Error ? err.message : "Login failed",
+      });
     } finally {
       setLoading(false);
     }

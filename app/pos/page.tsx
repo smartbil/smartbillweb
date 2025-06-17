@@ -6,6 +6,7 @@ import Input from "@/app/components/input";
 import Link from "next/link";
 import NumericKeyboardModal from "@/app/components/keyboard/keyboard";
 import { useAuthStore } from "../store/authStore";
+import Swal from "sweetalert2";
 
 const POSSystem = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("1");
@@ -35,25 +36,41 @@ const POSSystem = () => {
 
   const handleConfirmOrder = () => {
     if (selectedProducts.length === 0) {
-      alert("Please select at least one product");
+      Swal.fire({
+        icon: "warning",
+        title: "No Products Selected",
+        text: "Please select at least one product",
+      });
       return;
     }
 
     if (paymentMethods.length === 0) {
-      alert("Please select at least one payment method");
+      Swal.fire({
+        icon: "warning",
+        title: "No Payment Method",
+        text: "Please select at least one payment method",
+      });
       return;
     }
 
     const hasCreditPayment = paymentMethods.some(method => method.method === "credit");
 
     if (hasCreditPayment && !selectedCustomer) {
-      alert("Please select a customer for credit payment");
+      Swal.fire({
+        icon: "warning",
+        title: "Customer Required",
+        text: "Customer selection is required for credit payments",
+      });
       return;
     }
 
     const totalPaid = paymentMethods.reduce((sum, method) => sum + method.amount, 0);
     if (totalPaid !== finalAmount) {
-      alert(`Total payment amount (${totalPaid.toFixed(2)}) does not match the final amount (${finalAmount.toFixed(2)})`);
+      Swal.fire({
+        icon: "warning",
+        title: "Payment Mismatch",
+        text: `Total payment amount (${totalPaid.toFixed(2)}) does not match the final amount (${finalAmount.toFixed(2)})`,
+      });
       return;
     }
 
@@ -107,7 +124,11 @@ const POSSystem = () => {
     const currentQuantity = existingItem ? existingItem.quantity : 0;
 
     if (currentQuantity + 1 > product.stock) {
-      alert(`Not enough stock for ${product.name}. Available: ${product.stock}`);
+      Swal.fire({
+        icon: "warning",
+        title: "Not enough stock",
+        text: `Not enough stock for ${product.name}. Available: ${product.stock}`,
+      });
       return;
     }
 
@@ -128,7 +149,11 @@ const POSSystem = () => {
     const product = products.find(p => p.id === productId);
 
     if (product && newQuantity > product.stock) {
-      alert(`Not enough stock for ${product.name}. Available: ${product.stock}`);
+      Swal.fire({
+        icon: "warning",
+        title: "Not enough stock",
+        text: `Not enough stock for ${product.name}. Available: ${product.stock}`,
+      });
       return;
     }
 
@@ -171,7 +196,11 @@ const POSSystem = () => {
   const handleAddPaymentMethod = () => {
     const amount = Number(currentPaymentAmount);
     if (amount <= 0) {
-      alert("Please enter a valid amount");
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Amount",
+        text: "Please enter a valid amount",
+      });
       return;
     }
 
@@ -179,7 +208,11 @@ const POSSystem = () => {
     const remainingAmount = finalAmount - existingTotal;
 
     if (amount > remainingAmount) {
-      alert(`Amount exceeds remaining total (${remainingAmount.toFixed(2)})`);
+      Swal.fire({
+        icon: "warning",
+        title: "Amount Exceeded",
+        text: `Amount exceeds remaining total (${remainingAmount.toFixed(2)})`,
+      });
       return;
     }
 
@@ -248,7 +281,11 @@ const POSSystem = () => {
 
     const hasCreditPayment = paymentMethods.some(payment => payment.method === 'credit');
     if (hasCreditPayment && !selectedCustomer) {
-      alert("Customer selection is required for credit payments");
+      Swal.fire({
+        icon: "warning",
+        title: "Customer Required",
+        text: "Customer selection is required for credit payments",
+      });
       setIsProcessing(false);
       return;
     }
@@ -286,7 +323,11 @@ const POSSystem = () => {
 
       if (!allStockUpdatesSuccessful) {
         setIsProcessing(false);
-        alert("Error updating product stock. Please try again.");
+        Swal.fire({
+          icon: "error",
+          title: "Stock Update Error",
+          text: "Error updating product stock. Please try again.",
+        });
         return;
       }
 
@@ -301,7 +342,11 @@ const POSSystem = () => {
       const result = await response.json();
 
       if (result.success) {
-        alert(`Order Completed Successfully! Total: Rs ${finalAmount.toFixed(2)}`);
+        Swal.fire({
+          icon: "success",
+          title: "Order Completed",
+          text: `Order Completed Successfully! Total: Rs ${finalAmount.toFixed(2)}`,
+        });
 
         setSelectedProducts([]);
         setDiscountValue(0);
@@ -310,11 +355,19 @@ const POSSystem = () => {
         setSelectedCustomer(null);
         setIsBillModalVisible(false);
       } else {
-        alert(`Error: ${result.message}`);
+        Swal.fire({
+          icon: "error",
+          title: "Order Error",
+          text: `Error: ${result.message}`,
+        });
       }
     } catch (error) {
       console.error("Error completing purchase:", error);
-      alert("An error occurred while processing your order. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while processing your order. Please try again.",
+      });
     } finally {
       setIsProcessing(false);
     }

@@ -4,6 +4,7 @@ import { useAuthStore } from '@/app/store/authStore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/firebase';
+import Swal from 'sweetalert2';
 
 interface InputFieldProps {
   label: string;
@@ -166,7 +167,20 @@ export default function ProfileScreen() {
   };
 
   const handleCancelSubscription = async () => {
-    if (!user?.uid || !confirm('Are you sure you want to cancel your subscription?')) {
+    if (!user?.uid) {
+      return;
+    }
+
+    const confirmResult = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Are you sure you want to cancel your subscription?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, cancel it!',
+      cancelButtonText: 'No, keep it'
+    });
+
+    if (!confirmResult.isConfirmed) {
       return;
     }
 
@@ -185,14 +199,14 @@ export default function ProfileScreen() {
       const result = await response.json();
 
       if (result.success) {
-        alert('Subscription cancelled successfully');
+        await Swal.fire('Cancelled!', 'Subscription cancelled successfully', 'success');
         setSubscription((prev) => prev ? { ...prev, status: 'canceled' } : null);
       } else {
-        alert('Failed to cancel subscription');
+        await Swal.fire('Failed', 'Failed to cancel subscription', 'error');
       }
     } catch (error) {
       console.error('Error cancelling subscription:', error);
-      alert('An error occurred while cancelling your subscription');
+      await Swal.fire('Error', 'An error occurred while cancelling your subscription', 'error');
     }
   };
 
