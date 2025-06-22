@@ -4,7 +4,6 @@ import { useAuthStore } from '@/app/store/authStore';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/firebase';
-import Swal from "sweetalert2";
 
 interface InputFieldProps {
   label: string;
@@ -171,54 +170,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleDelete = async () => {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "This will permanently delete your account and all associated data.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, delete it!",
-  });
-
-  if (result.isConfirmed) {
-    try {
-      const res = await fetch("/api/auth/delete-account", {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
-      });
-
-      if (res.ok) {
-        await Swal.fire({
-          title: "Deleted!",
-          text: "Your account has been successfully deleted.",
-          icon: "success",
-        });
-
-        await signOut(auth);
-        logout();
-        router.push("/client/home");
-      } else {
-        const data = await res.json();
-        Swal.fire({
-          icon: "error",
-          title: "Failed to delete",
-          text: data.message || "Something went wrong.",
-        });
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  }
-};
-
   return (
     <div className="bg-background py-8 px-2">
       <div className="max-w-4xl mx-auto">
@@ -334,15 +285,7 @@ export default function ProfileScreen() {
             )}
           </div>
         </form>
-
-        <button
-            onClick={handleDelete}
-            className="px-6 py-2 rounded-lg bg-danger text-white mt-12"
-          >
-          Delete My Account
-        </button>
       </div>
-      
     </div>
   );
 }
