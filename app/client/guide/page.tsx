@@ -313,6 +313,64 @@ export default function GuidePage() {
           </p>
         </div>
 
+        {/* Video Tutorial Section */}
+        <div className="mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-soft">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-primary mb-2 flex items-center justify-center">
+                <svg className="w-8 h-8 mr-3 text-secondary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+                වීඩියෝ මාර්ගෝපදේශය
+              </h2>
+              <p className="text-lg text-muted">
+                Smart Bill යෙදුම භාවිත කරන්නේ කෙසේද යන්න විස්තරාත්මකව පැහැදිලි කරන වීඩියෝ මාර්ගෝපදේශය
+              </p>
+            </div>
+            
+            <div className="relative w-full max-w-4xl mx-auto">
+              <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-xl shadow-lg">
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full"
+                  src="https://www.youtube.com/embed/godHgcbRIxc"
+                  title="Smart Bill Video Guide"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+            
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted mb-4">
+                මෙම වීඩියෝව බලා Smart Bill යෙදුමේ සියලුම විශේෂාංග පිළිබඳව ඉගෙන ගන්න
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <a 
+                  href="https://youtu.be/godHgcbRIxc" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                  YouTube හි බලන්න
+                </a>
+                <button 
+                  onClick={() => scrollToSection('login')}
+                  className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors duration-200"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                  </svg>
+                  ලිඛිත මාර්ගෝපදේශය
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Table of Contents */}
           <div className="lg:w-1/4">
