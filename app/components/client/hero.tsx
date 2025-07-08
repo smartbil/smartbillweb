@@ -3,7 +3,6 @@ import Image from 'next/image';
 import React from 'react';
 import Logo from '@/public/assets/iconpng.png';
 import { useSpring, animated, config } from 'react-spring';
-import Link from 'next/link';
 
 const Hero = () => {
     const logoSpring = useSpring({
@@ -35,9 +34,16 @@ const Hero = () => {
                     Efficient | Reliable | Easy to use
                 </p>
                 <div className="mt-6 md:mt-8">
-                    <Link href="/client/packages" className="bg-accent text-white font-semibold py-2.5 px-5 md:py-3 md:px-6 rounded-lg shadow-md hover:bg-accent-dark transition-colors animate-fadeIn delay-500 text-base md:text-lg">
-                        Get Started
-                    </Link>
+                    <a 
+                        href="/smartbill.apk" 
+                        download="Smart-Bill.apk"
+                        className="bg-accent text-white font-semibold py-2.5 px-5 md:py-3 md:px-6 rounded-lg shadow-md hover:bg-highlight transition-colors animate-fadeIn delay-500 text-base md:text-lg inline-flex items-center gap-2"
+                    >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Download APK
+                    </a>
                 </div>
             </div>
         </section>
