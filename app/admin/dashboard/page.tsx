@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import { useAdminAuthStore } from '@/app/store/adminAuthStore';
 import AdminHeader from '@/app/components/admin/AdminHeader';
 import SecurityStatus from '@/app/components/admin/SecurityStatus';
-import { AdminUser, UserDetailsResponse, UsersResponse, PaymentData, Package, ManualPaymentRequest, FreeTrialData, ExtendedAdminUser } from '@/types/admin';
+import { AdminUser, UserDetailsResponse, UsersResponse, PaymentData, ManualPaymentRequest, FreeTrialData, ExtendedAdminUser } from '@/types/admin';
 
 interface UserTabProps {
   user: ExtendedAdminUser;
@@ -565,7 +565,6 @@ export default function AdminDashboard() {
 const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [email, setEmail] = useState('');
   const [selectedUser, setSelectedUser] = useState<ExtendedAdminUser | null>(null);
-  const [packages, setPackages] = useState<Package[]>([]);
   const [selectedPackage, setSelectedPackage] = useState('');
   const [duration, setDuration] = useState(7);
   const [paymentType, setPaymentType] = useState<'manual' | 'free_trial'>('free_trial');
@@ -574,24 +573,43 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
 
+  // Hardcoded packages
+  const packages = [
+    {
+      id: 'starter',
+      name: 'Starter Plan',
+      priceDisplay: 'LKR 990/month',
+      price: 990,
+      description: 'Ideal for small businesses and startups',
+      features: [
+        'Mobile POS Access',
+        'Sales & Invoice Management',
+        'Inventory Tracking',
+        'Email Support',
+      ],
+    },
+    {
+      id: 'standard',
+      name: 'Standard Plan',
+      priceDisplay: 'LKR 1,990/month',
+      price: 1990,
+      description: 'Perfect for retail shops and service providers',
+      features: [
+        'Everything in Starter, plus:',
+        'Supplier Management',
+        'Customer Management',
+        'Sales & Expense Reports',
+        'Discount Handling',
+        'Priority Support',
+      ],
+    },
+  ];
+
   useEffect(() => {
-    if (isOpen) {
-      fetchPackages();
+    if (isOpen && packages.length > 0) {
+      setSelectedPackage(packages[0].id);
     }
   }, [isOpen]);
-
-  const fetchPackages = async () => {
-    try {
-      const response = await fetch('/api/admin/packages');
-      const data = await response.json();
-      if (data.success) {
-        setPackages(data.packages);
-        setSelectedPackage(data.packages[0]?.id || '');
-      }
-    } catch (error) {
-      console.error('Error fetching packages:', error);
-    }
-  };
 
   const searchUser = async () => {
     if (!email.trim()) return;
@@ -772,7 +790,13 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
             </label>
             <select
               value={selectedPackage}
-              onChange={(e) => setSelectedPackage(e.target.value)}
+              onChange={(e) => {
+                setSelectedPackage(e.target.value);
+                const pkg = packages.find(p => p.id === e.target.value);
+                if (pkg && paymentType === 'manual') {
+                  setAmount(pkg.price);
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               required
             >
