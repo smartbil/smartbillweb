@@ -572,6 +572,8 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
+  
+  const { user } = useAdminAuthStore();
 
   // Hardcoded packages
   const packages = [
@@ -616,7 +618,17 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
     
     try {
       setSearching(true);
-      const response = await fetch('/api/admin/users');
+      
+      if (!user?.token) {
+        throw new Error('No authentication token available');
+      }
+      
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       const data: UsersResponse = await response.json();
       
       if (data.success) {
@@ -656,6 +668,15 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
       return;
     }
 
+    if (!user?.token) {
+      Swal.fire({
+        icon: "error",
+        title: "Authentication Error",
+        text: "No authentication token available",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const selectedPkg = packages.find(p => p.id === selectedPackage);
@@ -673,6 +694,7 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
       const response = await fetch('/api/admin/add-payment', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${user.token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
