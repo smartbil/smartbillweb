@@ -163,8 +163,14 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
+      // Call logout API to clear server-side cookies
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
       await signOut(auth);
-      logout();
+      await logout();
       router.push('/client/home');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -199,7 +205,7 @@ export default function ProfileScreen() {
         });
 
         await signOut(auth);
-        logout();
+        await logout();
         router.push("/client/home");
       } else {
         const data = await res.json();

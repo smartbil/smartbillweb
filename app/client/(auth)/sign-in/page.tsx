@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/app/store/authStore";
+import { useClientAuth } from "@/app/hooks/useClientAuth";
 import Button from "@/app/components/button"; 
 import Link from "next/link";
 import LoginInput from "@/app/components/logininput";
@@ -14,7 +14,41 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuthStore();
+  const { login, isAuthenticatedAndHydrated, user, checkSessionExpiry } = useClientAuth();
+
+  // Redirect authenticated users
+  useEffect(() => {
+    const checkAuthAndRedirect = async () => {
+      // Check if user is already authenticated after hydration
+      if (isAuthenticatedAndHydrated && user?.token) {
+        // Verify the session is still valid
+        const sessionValid = checkSessionExpiry();
+        if (sessionValid) {
+          // Try to verify with server
+          try {
+            const response = await fetch('/api/auth/verify', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (response.ok) {
+              // User is authenticated, redirect to home
+              router.push('/client/home');
+              return;
+            }
+          } catch {
+            // If verification fails, user can stay on sign-in page
+            console.log('Session verification failed, staying on sign-in');
+          }
+        }
+      }
+    };
+
+    checkAuthAndRedirect();
+  }, [isAuthenticatedAndHydrated, user, router, checkSessionExpiry]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +71,7 @@ export default function SignIn() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           email,
           password,

@@ -3,6 +3,39 @@
 import { useAuthStore } from '@/app/store/authStore';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+import type { UserData } from '@/types/userdata';
+
+interface Package {
+  title: string;
+  price: string;
+  description: string;
+  features: string[];
+  borderColor: string;
+  highlightText: string;
+  bestFor: string;
+  buttonColor: string;
+}
+
+interface PayhereParams {
+  sandbox: boolean;
+  merchant_id: string;
+  return_url: string;
+  cancel_url: string;
+  notify_url: string;
+  order_id: string;
+  items: string;
+  amount: string;
+  currency: string;
+  hash: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+  custom_1?: string | null;
+}
 
 const PAYHERE_MERCHANT_ID = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID || '1230646';
 const PAYHERE_SANDBOX_URL = process.env.NEXT_PUBLIC_PAYHERE_CHECKOUT_URL;
@@ -177,6 +210,7 @@ const PackagesDisplay: React.FC = () => {
     }
 
     setPayhereFormData({
+      sandbox: true, // Add this line
       merchant_id: PAYHERE_MERCHANT_ID,
       return_url: `${window.location.origin}/payment/success`,
       cancel_url: `${window.location.origin}/payment/cancel`,

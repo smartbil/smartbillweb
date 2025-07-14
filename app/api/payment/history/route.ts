@@ -1,16 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireClientAuth, checkClientRateLimit } from '@/app/utils/clientAuth';
 import { db } from '@/firebase';
 import { doc, collection, getDocs } from 'firebase/firestore';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId');
-
-  if (!userId) {
-    return NextResponse.json({ success: false, message: 'Missing userId' }, { status: 400 });
-  }
-
   try {
+    // Check rate limit
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    if (!checkClientRateLimit(`payment-history-${clientIP}`)) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    // Verify client authentication
+    const clientUser = await requireClientAuth(req);
+
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+
+    // Verify user can only access their own payment history
+    if (userId !== clientUser.uid) {
+      return NextResponse.json(
+        { success: false, message: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    if (!userId) {
+      return NextResponse.json({ success: false, message: 'Missing userId' }, { status: 400 });
+    }
+
     const userRef = doc(db, 'users', userId);
     const paymentsCol = collection(userRef, 'payments');
     const snapshot = await getDocs(paymentsCol);
@@ -35,6 +56,21 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, payments });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Failed to fetch payment history', error: String(error) }, { status: 500 });
+    console.error('Error fetching payment history:', error);
+    
+    // Handle authentication errors
+    if (error instanceof Error) {
+        if (error.message.includes('Authentication')) {
+            return NextResponse.json(
+                { success: false, message: 'Authentication required' },
+                { status: 401 }
+            );
+        }
+    }
+    
+    return NextResponse.json(
+      { success: false, message: 'Failed to fetch payment history' }, 
+      { status: 500 }
+    );
   }
 }

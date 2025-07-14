@@ -31,17 +31,30 @@ export async function POST(req: NextRequest) {
         const userData = userDoc.data();
         const token = await user.getIdToken();
 
-        return NextResponse.json({
+        // Create response with secure cookies
+        const response = NextResponse.json({
             success: true,
             message: "User logged in successfully.",
             uid: user.uid,
             user: {
                 email: userData.email,
                 username: userData.username,
-                uid: user.uid
+                uid: user.uid,
+                isAdmin: userData.isAdmin || false
             },
             token,
         }, { status: 200 });
+
+        // Set secure HTTP-only cookie for the token
+        response.cookies.set("client-auth-token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            path: "/",
+        });
+
+        return response;
 
     } catch (error) {
         console.error("Login error:", error);

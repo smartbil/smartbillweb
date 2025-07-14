@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireClientAuth, checkClientRateLimit } from '@/app/utils/clientAuth';
 import { db } from '@/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 
@@ -8,6 +9,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Check rate limit
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    if (!checkClientRateLimit(`new-sale-${clientIP}`)) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    // Verify client authentication
+    const clientUser = await requireClientAuth(req);
+
     const {
       shopId,
       customerId,
@@ -19,6 +32,14 @@ export async function POST(req: NextRequest) {
       totalAmount,
       paymentMethods,
     } = await req.json();
+
+    // Verify shop ownership
+    if (shopId !== clientUser.shopId) {
+      return NextResponse.json(
+        { success: false, message: 'Access denied' },
+        { status: 403 }
+      );
+    }
 
     if (!shopId) {
       return NextResponse.json({ success: false, message: 'Shop ID is required' }, { status: 400 });

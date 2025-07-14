@@ -1,4 +1,4 @@
-interface UserData {
+export interface UserData {
   uid?: string;
   email?: string;
   username?: string;
@@ -8,4 +8,5 @@ interface UserData {
   address?: string;
   phoneNumber?: string;
   businessType?: string;
+  isAdmin?: boolean;
 }

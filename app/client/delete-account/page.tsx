@@ -163,7 +163,7 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      logout();
+      await logout();
       router.push('/client/home');
     } catch (error) {
       console.error('Error signing out:', error);
