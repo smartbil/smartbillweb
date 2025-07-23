@@ -12,6 +12,26 @@ export default function ClientLayout({
     children: React.ReactNode;
 }>) {
     const router = useRouter();
+    
+    // Helper function to check if current path is public
+    const isPublicPath = () => {
+        if (typeof window === 'undefined') return false;
+        
+        const currentPath = window.location.pathname;
+        return (
+            currentPath === '/client' ||
+            currentPath === '/client/' ||
+            currentPath.startsWith('/client/home') ||
+            currentPath.startsWith('/client/sign-in') ||
+            currentPath.startsWith('/client/sign-up') ||
+            currentPath.startsWith('/client/privacy-policy') ||
+            currentPath.startsWith('/client/guide')
+        );
+    };
+
+    const [isPublic] = useState(isPublicPath());
+    
+    // Use the auth hook - only require auth for non-public pages
     const { 
         isAuthenticated, 
         user, 
@@ -20,7 +40,10 @@ export default function ClientLayout({
         checkSessionExpiry, 
         setSessionValid,
         hasHydrated
-    } = useClientAuth();
+    } = useClientAuth({ 
+        requireAuth: !isPublic
+    });
+
     const [isLoading, setIsLoading] = useState(true);
     const [isVerifying, setIsVerifying] = useState(false);
 
@@ -32,22 +55,17 @@ export default function ClientLayout({
             try {
                 setIsVerifying(true);
                 
-                // Skip verification for auth pages and public pages
-                if (typeof window !== 'undefined') {
-                    const currentPath = window.location.pathname;
-                    const publicPages = [
-                        '/client/sign-in', 
-                        '/client/sign-up', 
-                        '/client/privacy-policy',
-                        '/client/guide'
-                    ];
-                    
-                    if (publicPages.some(page => currentPath.includes(page))) {
-                        setIsLoading(false);
-                        return;
-                    }
+                // For public pages, skip all authentication verification
+                if (isPublic) {
+                    console.log('Public page detected, skipping all auth verification');
+                    setIsLoading(false);
+                    setIsVerifying(false);
+                    return;
                 }
 
+                // Protected page logic
+                console.log('Protected page detected, verifying authentication');
+                
                 // Check if session has expired
                 if (!checkSessionExpiry()) {
                     console.log('Session expired, redirecting to sign-in');
@@ -109,40 +127,49 @@ export default function ClientLayout({
                 setSessionValid(true);
                 
                 console.log('Client access verified successfully');
-                setIsLoading(false);
                 
             } catch (error) {
                 console.error('Error verifying client access:', error);
                 
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Connection Error',
-                    text: 'Unable to verify your session. Please check your connection and try again.',
-                    confirmButtonText: 'Retry'
-                });
+                // Only show error dialog for protected pages
+                if (!isPublic) {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Connection Error',
+                        text: 'Unable to verify your session. Please check your connection and try again.',
+                        confirmButtonText: 'Retry'
+                    });
+                }
                 
-                // Don't logout on network errors, just show warning
-                setIsLoading(false);
             } finally {
+                setIsLoading(false);
                 setIsVerifying(false);
             }
         };
 
         verifyClientAccess();
 
-        // Set up periodic session validation (every 5 minutes)
-        const sessionCheckInterval = setInterval(() => {
-            if (isAuthenticated && user?.token) {
-                checkSessionExpiry();
-                updateLastActivity();
+        // Set up periodic session validation (every 5 minutes) - only for protected pages
+        let sessionCheckInterval: NodeJS.Timeout | null = null;
+        
+        if (!isPublic && isAuthenticated) {
+            sessionCheckInterval = setInterval(() => {
+                if (isAuthenticated && user?.token) {
+                    checkSessionExpiry();
+                    updateLastActivity();
+                }
+            }, 5 * 60 * 1000); // 5 minutes
+        }
+
+        return () => {
+            if (sessionCheckInterval) {
+                clearInterval(sessionCheckInterval);
             }
-        }, 5 * 60 * 1000); // 5 minutes
+        };
+    }, [hasHydrated, isAuthenticated, user, router, logout, updateLastActivity, checkSessionExpiry, setSessionValid, isPublic]);
 
-        return () => clearInterval(sessionCheckInterval);
-    }, [hasHydrated, isAuthenticated, user, router, logout, updateLastActivity, checkSessionExpiry, setSessionValid]);
-
-    // Show loading spinner while hydrating or verifying
-    if (!hasHydrated || isLoading || isVerifying) {
+    // Show loading spinner ONLY for protected pages while hydrating or verifying
+    if (!hasHydrated || (isLoading && !isPublic) || (isVerifying && !isPublic)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">

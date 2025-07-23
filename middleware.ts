@@ -33,8 +33,16 @@ export async function middleware(request: NextRequest) {
     }
 
     // Allow access to public pages
-    const publicClientPages = ['/client/privacy-policy', '/client/guide'];
-    if (publicClientPages.some(page => request.nextUrl.pathname.startsWith(page))) {
+    const publicClientPages = [
+      '/client',
+      '/client/',
+      '/client/home',
+      '/client/privacy-policy',
+      '/client/guide'
+    ];
+    if (
+      publicClientPages.some(page => request.nextUrl.pathname === page || request.nextUrl.pathname.startsWith(page + '/'))
+    ) {
       return NextResponse.next();
     }
 
