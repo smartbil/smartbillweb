@@ -611,7 +611,7 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
     if (isOpen && packages.length > 0) {
       setSelectedPackage(packages[0].id);
     }
-  }, [isOpen]);
+  }, [isOpen, packages]);
 
   const searchUser = async () => {
     if (!email.trim()) return;

@@ -32,15 +32,15 @@ export default function ClientLayout({
     const [isPublic] = useState(isPublicPath());
     
     // Use the auth hook - only require auth for non-public pages
-    const { 
-        isAuthenticated, 
-        user, 
-        logout, 
-        updateLastActivity, 
-        checkSessionExpiry, 
+    const {
+        isAuthenticated,
+        user,
+        logout,
+        updateLastActivity,
+        checkSessionExpiry,
         setSessionValid,
         hasHydrated
-    } = useClientAuth({ 
+    } = useClientAuth({
         requireAuth: !isPublic
     });
 
@@ -48,34 +48,28 @@ export default function ClientLayout({
     const [isVerifying, setIsVerifying] = useState(false);
 
     useEffect(() => {
-        // Don't run verification until hydration is complete
         if (!hasHydrated) return;
-        
+
         const verifyClientAccess = async () => {
             try {
                 setIsVerifying(true);
-                
+
                 // For public pages, skip all authentication verification
                 if (isPublic) {
-                    console.log('Public page detected, skipping all auth verification');
                     setIsLoading(false);
                     setIsVerifying(false);
                     return;
                 }
 
                 // Protected page logic
-                console.log('Protected page detected, verifying authentication');
-                
                 // Check if session has expired
                 if (!checkSessionExpiry()) {
-                    console.log('Session expired, redirecting to sign-in');
                     router.push('/client/sign-in?error=session-expired');
                     return;
                 }
 
                 // Check if user is authenticated
                 if (!isAuthenticated || !user?.token) {
-                    console.log('No authentication found, redirecting to sign-in');
                     router.push('/client/sign-in');
                     return;
                 }
@@ -90,8 +84,6 @@ export default function ClientLayout({
                 });
 
                 if (!response.ok) {
-                    console.log('User verification failed:', response.status);
-                    
                     if (response.status === 401) {
                         await Swal.fire({
                             icon: 'warning',
@@ -107,16 +99,13 @@ export default function ClientLayout({
                             confirmButtonText: 'OK'
                         });
                     }
-                    
                     await logout();
                     router.push('/client/sign-in?error=verification-failed');
                     return;
                 }
 
                 const data = await response.json();
-                
                 if (!data.success || !data.user) {
-                    console.log('User verification failed');
                     await logout();
                     router.push('/client/sign-in?error=invalid-session');
                     return;
@@ -125,12 +114,8 @@ export default function ClientLayout({
                 // Update last activity
                 updateLastActivity();
                 setSessionValid(true);
-                
-                console.log('Client access verified successfully');
-                
-            } catch (error) {
-                console.error('Error verifying client access:', error);
-                
+
+            } catch {
                 // Only show error dialog for protected pages
                 if (!isPublic) {
                     await Swal.fire({
@@ -140,7 +125,6 @@ export default function ClientLayout({
                         confirmButtonText: 'Retry'
                     });
                 }
-                
             } finally {
                 setIsLoading(false);
                 setIsVerifying(false);
@@ -151,7 +135,6 @@ export default function ClientLayout({
 
         // Set up periodic session validation (every 5 minutes) - only for protected pages
         let sessionCheckInterval: NodeJS.Timeout | null = null;
-        
         if (!isPublic && isAuthenticated) {
             sessionCheckInterval = setInterval(() => {
                 if (isAuthenticated && user?.token) {

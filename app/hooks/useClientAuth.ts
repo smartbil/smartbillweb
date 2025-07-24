@@ -63,7 +63,7 @@ export function useClientAuth(options: UseClientAuthOptions = {}) {
           // If user is authenticated but on sign-in page, redirect to dashboard or home
           if (authStore.isAuthenticated && isSignInPage) {
             console.log('User already authenticated, redirecting from sign-in');
-            router.push('/client/dashboard'); // or wherever you want authenticated users to go
+            router.push('/client/home'); // redirect authenticated users to home
           }
         }
       }, 100);

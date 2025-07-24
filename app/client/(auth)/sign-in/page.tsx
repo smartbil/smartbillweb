@@ -14,6 +14,36 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Read error from URL (e.g., ?error=session-expired)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const errorParam = params.get('error');
+      if (errorParam) {
+        let message = '';
+        switch (errorParam) {
+          case 'session-expired':
+            message = 'Your session has expired. Please sign in again.';
+            break;
+          case 'invalid-session':
+            message = 'Invalid session. Please sign in again.';
+            break;
+          case 'verification-failed':
+            message = 'Session verification failed. Please sign in again.';
+            break;
+          default:
+            message = errorParam.replace(/-/g, ' ');
+        }
+        setError(message);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sign In Required',
+          text: message,
+        });
+      }
+    }
+  }, []);
+
   const { login, isAuthenticatedAndHydrated, user, checkSessionExpiry } = useClientAuth();
 
   // Redirect authenticated users
@@ -40,8 +70,12 @@ export default function SignIn() {
               return;
             }
           } catch {
-            // If verification fails, user can stay on sign-in page
-            console.log('Session verification failed, staying on sign-in');
+            setError('Session verification failed, staying on sign-in');
+            Swal.fire({
+              icon: 'warning',
+              title: 'Sign In Required',
+              text: 'Session verification failed, staying on sign-in',
+            });
           }
         }
       }
